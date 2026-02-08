@@ -11,43 +11,44 @@
  */
 int delete_dnodeint_at_index(dlistint_t **head, unsigned int index)
 {
-	dlistint_t *saved_head;
 	dlistint_t *tmp;
 	unsigned int p;
 
-	if (*head == NULL)
-	{
+	if (head == NULL || *head == NULL)
 		return (-1);
-	}
-	saved_head = *head;
+
+	tmp = *head;
 	p = 0;
-	while (p < index && *head != NULL)
+
+	/* 1. Traverse using tmp, not *head, so we don't lose the start */
+	while (p < index && tmp != NULL)
 	{
-		*head = (*head)->next;
+		tmp = tmp->next;
 		p++;
 	}
-	if (p != index)
-	{
-		*head = saved_head;
+
+	/* 2. If index is out of bounds */
+	if (tmp == NULL)
 		return (-1);
-	}
-	if (0 == index)
+
+	/* 3. Handle deletion of the head node (index 0) */
+	if (index == 0)
 	{
-		tmp = (*head)->next;
-		free(*head);
-		*head = tmp;
-		if (tmp != NULL)
-		{
-			tmp->prev = NULL;
-		}
+		*head = tmp->next;
+		if (*head != NULL)
+			(*head)->prev = NULL;
+		free(tmp);
+		return (1);
 	}
-	else
-	{
-		(*head)->prev->prev = (*head)->prev;
-		free(*head);
-		if ((*head)->next)
-			(*head)->next->prev = (*head)->prev;
-		*head = saved_head;
-	}
+
+	/* 4. Handle deletion of middle or end nodes */
+	/* Connect the previous node's 'next' to the current node's 'next' */
+	tmp->prev->next = tmp->next;
+
+	/* If there is a next node, connect its 'prev' to the current node's 'prev' */
+	if (tmp->next != NULL)
+		tmp->next->prev = tmp->prev;
+
+	free(tmp);
 	return (1);
 }
